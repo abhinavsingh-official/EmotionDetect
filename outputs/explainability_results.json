@@ -1,0 +1,85 @@
+{
+  "model": "mlp",
+  "top_features": [
+    {
+      "feature": "mfcc[0]",
+      "importance_mean": 0.08888888888888892,
+      "importance_std": 0.016620305890723983
+    },
+    {
+      "feature": "mfcc[7]",
+      "importance_mean": 0.0652777777777778,
+      "importance_std": 0.014868248545636249
+    },
+    {
+      "feature": "mfcc[1]",
+      "importance_mean": 0.06250000000000001,
+      "importance_std": 0.011058905131885746
+    },
+    {
+      "feature": "mfcc[4]",
+      "importance_mean": 0.06083333333333335,
+      "importance_std": 0.0194226067849037
+    },
+    {
+      "feature": "mfcc[9]",
+      "importance_mean": 0.050277777777777824,
+      "importance_std": 0.011211353372561428
+    },
+    {
+      "feature": "mfcc[6]",
+      "importance_mean": 0.048888888888888926,
+      "importance_std": 0.01406554322352463
+    },
+    {
+      "feature": "mfcc[3]",
+      "importance_mean": 0.04722222222222224,
+      "importance_std": 0.012044157438154889
+    },
+    {
+      "feature": "mfcc[15]",
+      "importance_mean": 0.04277777777777779,
+      "importance_std": 0.014174834246858972
+    },
+    {
+      "feature": "chroma[1]",
+      "importance_mean": 0.0388888888888889,
+      "importance_std": 0.006916610887771538
+    },
+    {
+      "feature": "mfcc[12]",
+      "importance_mean": 0.03611111111111113,
+      "importance_std": 0.011785113019775795
+    },
+    {
+      "feature": "mfcc[24]",
+      "importance_mean": 0.03583333333333336,
+      "importance_std": 0.010202426484559428
+    },
+    {
+      "feature": "mfcc[34]",
+      "importance_mean": 0.03583333333333335,
+      "importance_std": 0.008466528141182327
+    },
+    {
+      "feature": "chroma[5]",
+      "importance_mean": 0.035555555555555576,
+      "importance_std": 0.01535586106787249
+    },
+    {
+      "feature": "mfcc[2]",
+      "importance_mean": 0.03500000000000002,
+      "importance_std": 0.01527525231651948
+    },
+    {
+      "feature": "mfcc[20]",
+      "importance_mean": 0.03333333333333334,
+      "importance_std": 0.007757911135427186
+    }
+  ],
+  "family_summary": {
+    "mel": 0,
+    "mfcc": 13,
+    "chroma": 2
+  }
+}

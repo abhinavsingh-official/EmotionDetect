@@ -1,0 +1,5 @@
+{
+  "accuracy": 0.9159722222222222,
+  "total_samples": 1440,
+  "caveat": "Evaluated on the model's own likely training set (RAVDESS, no disclosed split) - not a clean generalization measurement."
+}
