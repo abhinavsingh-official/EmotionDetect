@@ -24,23 +24,23 @@ st.set_page_config(page_title="EmotionDetect", layout="wide")
 STYLE = """
 <style>
 .block-container { padding-top: 2rem; max-width: 1200px; }
-h1 { font-weight: 700; letter-spacing: -0.02em; }
+h1 { font-weight: 700; letter-spacing: -0.02em; color: #43b047; }
 .ed-card {
-    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    background: #122a1d; border: 1px solid #1f6fd1; border-radius: 10px;
     padding: 1rem 1.2rem; margin-bottom: 0.8rem;
 }
 .ed-feature-card {
-    background: #161b22; border: 1px solid #30363d; border-radius: 12px;
+    background: #122a1d; border: 1px solid #1f6fd1; border-radius: 12px;
     padding: 1.3rem 1.4rem; height: 100%;
 }
-.ed-feature-card h4 { margin-top: 0; }
+.ed-feature-card h4 { margin-top: 0; color: #5b9bf0; }
 .ed-feature-card ul { margin: 0.4rem 0 0 0; padding-left: 1.2rem; color: #c9d1d9; }
 .ed-feature-card li { margin-bottom: 0.35rem; }
-.ed-stat { font-size: 2rem; font-weight: 700; color: #ff4b4b; }
+.ed-stat { font-size: 2rem; font-weight: 700; color: #43b047; }
 .ed-stat-label { color: #8b949e; font-size: 0.9rem; }
 .ed-caveat {
-    background: #2d1b1b; border: 1px solid #5c2b2b; border-radius: 10px;
-    padding: 0.9rem 1.1rem; color: #e6b8b8; font-size: 0.92rem;
+    background: #2d2410; border: 1px solid #6b5420; border-radius: 10px;
+    padding: 0.9rem 1.1rem; color: #e6d4a8; font-size: 0.92rem;
 }
 </style>
 """
@@ -88,21 +88,18 @@ def home_tab():
 
     st.markdown(
         '<div class="ed-card" style="padding:2rem 2.2rem;">'
-        "<h2 style='margin-top:0;'>Three different answers to the same question</h2>"
+        "<h2 style='margin-top:0;'>Three guesses at the same emotion</h2>"
         "<p style='color:#c9d1d9; font-size:1.05rem; max-width:760px; line-height:1.6;'>"
-        "Say something into a microphone and this app guesses the emotion behind it three "
-        "different ways: a simple nearest-centroid lookup, a classical ML model trained from "
-        "scratch on hand-crafted audio features, and a large pretrained speech model. The "
-        "point isn't to pick a winner and hide the rest - it's to show what each approach "
-        "actually buys you, honestly, including where the comparison itself has caveats."
+        "Say something into a mic and this app guesses the emotion behind it three different "
+        "ways, shown side by side instead of picking one and hiding the rest."
         "</p>"
         "<ul>"
-        "<li><b>Baseline</b> - cosine similarity between your voice's features and each "
-        "emotion's average feature vector. Zero training cost, the weakest signal.</li>"
-        "<li><b>Classical ML</b> - a model actually trained and cross-validated on the same "
-        "features, picked from several candidates by real accuracy, not by assumption.</li>"
-        "<li><b>Pretrained deep model</b> - a wav2vec2 model fine-tuned specifically for "
-        "speech emotion, used here purely for inference.</li>"
+        "<li><b>Baseline</b> - cosine similarity to each emotion's average feature vector. "
+        "No training, the weakest signal.</li>"
+        "<li><b>Classical ML</b> - a model trained and cross-validated on the same features, "
+        "picked by actual accuracy.</li>"
+        "<li><b>Pretrained deep model</b> - a wav2vec2 model fine-tuned for speech emotion, "
+        "used here just for inference.</li>"
         "</ul>"
         "</div>",
         unsafe_allow_html=True,
@@ -133,16 +130,15 @@ def home_tab():
             unsafe_allow_html=True,
         )
 
-    st.markdown("#### What each tab actually does")
+    st.markdown("#### What each tab does")
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(
             '<div class="ed-feature-card"><h4>Live Analysis</h4>'
             "<ul>"
-            "<li>Record a few seconds of speech directly in the browser</li>"
-            "<li>See all three models' top emotion guesses side by side as a bar chart, "
-            "not just a single number</li>"
-            "<li>Runs entirely on this machine - no audio leaves your computer</li>"
+            "<li>Record a few seconds of speech in the browser</li>"
+            "<li>See all three models' guesses as a bar chart</li>"
+            "<li>Runs locally - no audio leaves your computer</li>"
             "</ul></div>",
             unsafe_allow_html=True,
         )
@@ -150,18 +146,16 @@ def home_tab():
         st.markdown(
             '<div class="ed-feature-card"><h4>Model Comparison</h4>'
             "<ul>"
-            "<li>The full cross-validated results table behind the numbers above</li>"
-            "<li>A confusion matrix for the best classical model, so you can see exactly "
-            "which emotions it confuses, not just its overall score</li>"
-            "<li>A permutation-importance breakdown of which audio features the model "
-            "actually relies on</li>"
+            "<li>The full cross-validated results table</li>"
+            "<li>A confusion matrix for the best model - what it confuses, not just its score</li>"
+            "<li>Which audio features the model actually relies on</li>"
             "</ul></div>",
             unsafe_allow_html=True,
         )
 
     st.markdown(
-        '<p style="color:#8b949e; margin-top:1.6rem;">Head to <b>Live Analysis</b> to try it '
-        "yourself, or <b>Model Comparison</b> for the full numbers behind these results.</p>",
+        '<p style="color:#8b949e; margin-top:1.6rem;">Try <b>Live Analysis</b>, or check '
+        "<b>Model Comparison</b> for the full numbers.</p>",
         unsafe_allow_html=True,
     )
 
@@ -169,10 +163,10 @@ def home_tab():
 def _bar_chart(title: str, probs: dict[str, float]):
     labels = list(probs.keys())
     values = list(probs.values())
-    fig = go.Figure(go.Bar(x=labels, y=values, marker_color="#ff4b4b"))
+    fig = go.Figure(go.Bar(x=labels, y=values, marker_color="#43b047"))
     fig.update_layout(
         title=title, yaxis_range=[0, 1], template="plotly_dark",
-        paper_bgcolor="#161b22", plot_bgcolor="#161b22", height=320,
+        paper_bgcolor="#122a1d", plot_bgcolor="#122a1d", height=320,
         margin=dict(l=20, r=20, t=40, b=20),
     )
     st.plotly_chart(fig, use_container_width=True)
@@ -180,9 +174,8 @@ def _bar_chart(title: str, probs: dict[str, float]):
 
 def live_analysis_tab():
     st.markdown(
-        '<p style="color:#8b949e;">Record a short sentence - a few seconds is enough. Try '
-        "saying the same sentence in an obviously different tone (flat vs. excited) to see "
-        "how much the predictions shift.</p>",
+        '<p style="color:#8b949e;">Record a short sentence. Try the same line in two '
+        "different tones (flat vs. excited) and see how much the predictions shift.</p>",
         unsafe_allow_html=True,
     )
 
@@ -232,10 +225,9 @@ def live_analysis_tab():
             probs = pretrained.predict(audio, sr=16000)
         _bar_chart("Pretrained wav2vec2", probs)
         st.markdown(
-            '<div class="ed-caveat">Heads up: this pretrained model was itself fine-tuned on '
-            "the RAVDESS dataset, so it has almost certainly heard voices and sentences like "
-            "this before. Its confidence here says more about how well it learned RAVDESS "
-            "specifically than how well it generalizes to an arbitrary new voice.</div>",
+            '<div class="ed-caveat">Heads up: this model was fine-tuned on the RAVDESS '
+            "dataset, so its confidence here reflects how well it learned that dataset more "
+            "than how well it generalizes to a new voice.</div>",
             unsafe_allow_html=True,
         )
 
@@ -279,19 +271,19 @@ def model_comparison_tab():
     st.markdown(f"#### Confusion matrix - {classifier_results['best_model']} (best classical model)")
     cm = np.array(classifier_results["confusion_matrix"])
     labels = classifier_results["labels"]
-    fig = go.Figure(go.Heatmap(z=cm, x=labels, y=labels, colorscale="Reds"))
+    fig = go.Figure(go.Heatmap(z=cm, x=labels, y=labels, colorscale="Greens"))
     fig.update_layout(
-        template="plotly_dark", paper_bgcolor="#161b22", plot_bgcolor="#161b22",
+        template="plotly_dark", paper_bgcolor="#122a1d", plot_bgcolor="#122a1d",
         xaxis_title="Predicted", yaxis_title="Actual", height=450,
     )
     st.plotly_chart(fig, use_container_width=True)
 
     if explainability_results:
-        st.markdown(f"#### What the {explainability_results['model']} model actually looks at")
+        st.markdown(f"#### What the {explainability_results['model']} model looks at")
         st.markdown(
-            '<p style="color:#8b949e;">Permutation importance: shuffle one feature across all '
-            "samples and see how much accuracy drops. A feature the model relies on hurts a lot "
-            "when scrambled; one it ignores barely moves the needle.</p>",
+            '<p style="color:#8b949e;">Shuffle one feature, see how much accuracy drops. '
+            "A feature the model relies on hurts a lot when scrambled; one it ignores barely "
+            "moves the needle.</p>",
             unsafe_allow_html=True,
         )
         feat_df = pd.DataFrame(explainability_results["top_features"])
@@ -299,9 +291,8 @@ def model_comparison_tab():
         summary = explainability_results["family_summary"]
         st.markdown(
             f'<p style="color:#8b949e;">Of the top 15 features, {summary["mfcc"]} are MFCCs, '
-            f'{summary["mel"]} are Mel-spectrogram bands, and {summary["chroma"]} are chroma bins - '
-            "MFCCs dominating matches the established speech-emotion literature, where MFCCs "
-            "capture the spectral envelope shape tied to vocal tract and prosody.</p>",
+            f'{summary["mel"]} are Mel bands, {summary["chroma"]} are chroma - MFCCs dominating '
+            "matches what's expected in speech-emotion work.</p>",
             unsafe_allow_html=True,
         )
 
@@ -309,10 +300,7 @@ def model_comparison_tab():
 def main():
     st.markdown(STYLE, unsafe_allow_html=True)
     st.title("EmotionDetect")
-    st.caption(
-        "Speech emotion recognition, compared honestly across three different approaches - "
-        "not just the one that scores highest."
-    )
+    st.caption("Speech emotion recognition, compared across three different approaches.")
     tab0, tab1, tab2 = st.tabs(["Home", "Live Analysis", "Model Comparison"])
     with tab0:
         home_tab()
