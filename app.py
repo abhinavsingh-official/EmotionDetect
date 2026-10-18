@@ -26,11 +26,11 @@ STYLE = """
 .block-container { padding-top: 2rem; max-width: 1200px; }
 h1 { font-weight: 700; letter-spacing: -0.02em; color: #43b047; }
 .ed-card {
-    background: #122a1d; border: 1px solid #1f6fd1; border-radius: 10px;
+    background: #13213d; border: 1px solid #2a5ca8; border-radius: 10px;
     padding: 1rem 1.2rem; margin-bottom: 0.8rem;
 }
 .ed-feature-card {
-    background: #122a1d; border: 1px solid #1f6fd1; border-radius: 12px;
+    background: #13213d; border: 1px solid #2a5ca8; border-radius: 12px;
     padding: 1.3rem 1.4rem; height: 100%;
 }
 .ed-feature-card h4 { margin-top: 0; color: #5b9bf0; }
@@ -166,7 +166,7 @@ def _bar_chart(title: str, probs: dict[str, float]):
     fig = go.Figure(go.Bar(x=labels, y=values, marker_color="#43b047"))
     fig.update_layout(
         title=title, yaxis_range=[0, 1], template="plotly_dark",
-        paper_bgcolor="#122a1d", plot_bgcolor="#122a1d", height=320,
+        paper_bgcolor="#13213d", plot_bgcolor="#13213d", height=320,
         margin=dict(l=20, r=20, t=40, b=20),
     )
     st.plotly_chart(fig, use_container_width=True)
@@ -273,7 +273,7 @@ def model_comparison_tab():
     labels = classifier_results["labels"]
     fig = go.Figure(go.Heatmap(z=cm, x=labels, y=labels, colorscale="Greens"))
     fig.update_layout(
-        template="plotly_dark", paper_bgcolor="#122a1d", plot_bgcolor="#122a1d",
+        template="plotly_dark", paper_bgcolor="#13213d", plot_bgcolor="#13213d",
         xaxis_title="Predicted", yaxis_title="Actual", height=450,
     )
     st.plotly_chart(fig, use_container_width=True)
