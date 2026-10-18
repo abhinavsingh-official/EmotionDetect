@@ -1,6 +1,9 @@
 venv/
+.venv/
 __pycache__/
 *.pyc
 outputs/
 *.pkl
+db/
+.DS_Store
 
