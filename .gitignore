@@ -2,7 +2,8 @@ venv/
 .venv/
 __pycache__/
 *.pyc
-outputs/
+outputs/*
+!outputs/*.json
 *.pkl
 db/
 .DS_Store
