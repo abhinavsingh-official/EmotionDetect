@@ -1,11 +1,13 @@
+import os
+from typing import Dict, List
+
 import librosa
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from scipy.signal import resample
-from sklearn.preprocessing import RobustScaler
 from sklearn.metrics.pairwise import cosine_similarity
-from typing import List, Dict
+from sklearn.preprocessing import RobustScaler
+from tqdm import tqdm
 
 
 class AudioEmotionRecognizer:
@@ -34,14 +36,15 @@ class AudioEmotionRecognizer:
 
         # Convert audio to float32 in range [-1, 1]
         if audio.dtype != np.float32:
-            audio = audio.astype(np.float32) / np.max(np.abs(audio))
+            peak = np.max(np.abs(audio))
+            audio = audio.astype(np.float32) / peak if peak > 0 else audio.astype(np.float32)
 
         mel = librosa.feature.melspectrogram(y=audio, sr=self.sample_rate)
         chroma = librosa.feature.chroma_stft(y=audio, sr=self.sample_rate)
         mfcc = librosa.feature.mfcc(y=audio, sr=self.sample_rate, n_mfcc=40)
 
         combined = np.concatenate([mel, mfcc, chroma], axis=0)
-        features = combined.mean(axis=1).reshape(1, -1)
+        features = pd.DataFrame(combined.mean(axis=1).reshape(1, -1), columns=self.features)
         return self.scaler.transform(features)
 
     def predict(self, audio: np.ndarray, sr: int) -> Dict[str, float]:
@@ -72,7 +75,7 @@ class AudioEmotionRecognizer:
 
         for path in tqdm(file_paths, desc="Building DB"):
             audio, _ = librosa.load(path, sr=sample_rate)
-            emotion_id = path.split("\\")[-1].split("-")[emotion_index]
+            emotion_id = os.path.basename(path).split("-")[emotion_index]
             label = emotion_map.get(emotion_id, "Unknown")
             features.append(extract(audio, sample_rate))
             labels.append(label)
