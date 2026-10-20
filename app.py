@@ -18,6 +18,13 @@ import streamlit as st
 from streamlit_mic_recorder import mic_recorder
 
 from AudioEmo import AudioEmotionRecognizer
+from timeline import load_audio_file, analyze_timeline
+
+EMOTION_COLORS = {
+    "angry": "#F08080", "disgust": "#9ACD32", "fearful": "#8A7FDB",
+    "happy": "#66CDAA", "neutral": "#F0E68C", "sad": "#6FA8DC",
+    "surprised": "#FFB347", "calm": "#B0E0E6",
+}
 
 st.set_page_config(page_title="EmotionDetect", layout="wide")
 
@@ -88,18 +95,18 @@ def home_tab():
 
     st.markdown(
         '<div class="ed-card" style="padding:2rem 2.2rem;">'
-        "<h2 style='margin-top:0;'>Three guesses at the same emotion</h2>"
+        "<h2 style='margin-top:0;'>How does the emotion in a clip change over time?</h2>"
         "<p style='color:#c9d1d9; font-size:1.05rem; max-width:760px; line-height:1.6;'>"
-        "Say something into a mic and this app guesses the emotion behind it three different "
-        "ways, shown side by side instead of picking one and hiding the rest."
+        "Most emotion-from-voice demos give you one label for one short clip. The more useful "
+        "question is usually how that emotion moves over a longer recording - a film scene "
+        "that shifts from calm to tense, a song that builds, a conversation that turns. "
+        "<b>Timeline</b> tracks that; everything else here is the model work behind it, shown "
+        "honestly rather than hidden."
         "</p>"
         "<ul>"
-        "<li><b>Baseline</b> - cosine similarity to each emotion's average feature vector. "
-        "No training, the weakest signal.</li>"
-        "<li><b>Classical ML</b> - a model trained and cross-validated on the same features, "
-        "picked by actual accuracy.</li>"
-        "<li><b>Pretrained deep model</b> - a wav2vec2 model fine-tuned for speech emotion, "
-        "used here just for inference.</li>"
+        "<li><b>General clips</b> - upload a film scene or a song, see its emotional arc</li>"
+        "<li><b>Interview/interrogation sessions</b> - the same timeline, framed around a "
+        "conversation, with an explicit disclaimer this is a signal, not lie detection</li>"
         "</ul>"
         "</div>",
         unsafe_allow_html=True,
@@ -131,8 +138,18 @@ def home_tab():
         )
 
     st.markdown("#### What each tab does")
-    c1, c2 = st.columns(2)
+    c1, c2, c3 = st.columns(3)
     with c1:
+        st.markdown(
+            '<div class="ed-feature-card"><h4>Timeline</h4>'
+            "<ul>"
+            "<li>Upload a longer clip, see emotion over time</li>"
+            "<li>General mode for film/music, interrogation mode for conversations</li>"
+            "<li>Sliding 3-second windows, not one label for the whole clip</li>"
+            "</ul></div>",
+            unsafe_allow_html=True,
+        )
+    with c2:
         st.markdown(
             '<div class="ed-feature-card"><h4>Live Analysis</h4>'
             "<ul>"
@@ -142,11 +159,11 @@ def home_tab():
             "</ul></div>",
             unsafe_allow_html=True,
         )
-    with c2:
+    with c3:
         st.markdown(
             '<div class="ed-feature-card"><h4>Model Comparison</h4>'
             "<ul>"
-            "<li>The full cross-validated results table</li>"
+            "<li>The full cross-validated results table behind Timeline's model</li>"
             "<li>A confusion matrix for the best model - what it confuses, not just its score</li>"
             "<li>Which audio features the model actually relies on</li>"
             "</ul></div>",
@@ -154,8 +171,77 @@ def home_tab():
         )
 
     st.markdown(
-        '<p style="color:#8b949e; margin-top:1.6rem;">Try <b>Live Analysis</b>, or check '
-        "<b>Model Comparison</b> for the full numbers.</p>",
+        '<p style="color:#8b949e; margin-top:1.6rem;">Try <b>Timeline</b> on a longer clip, '
+        "<b>Live Analysis</b> for a quick single recording, or check <b>Model Comparison</b> "
+        "for the full numbers.</p>",
+        unsafe_allow_html=True,
+    )
+
+
+def timeline_tab():
+    st.markdown(
+        '<p style="color:#8b949e;">Upload a longer clip - a film scene, a song, a recorded '
+        "conversation - and see the emotion it carries change over time, instead of one label "
+        "for the whole thing.</p>",
+        unsafe_allow_html=True,
+    )
+
+    mode = st.radio(
+        "Mode", ["General clip (film / music)", "Interview / interrogation session"], horizontal=True,
+    )
+    is_interrogation = mode.startswith("Interview")
+
+    if is_interrogation:
+        st.markdown(
+            '<div class="ed-caveat">This tracks a signal - tone/emotion shifts over the '
+            "conversation - not deception. There is no scientifically validated way to detect "
+            "lying from voice alone, and this tool makes no such claim. Treat a shift toward "
+            "fear/anger as \"worth a human noticing,\" not as evidence of anything.</div>",
+            unsafe_allow_html=True,
+        )
+
+    uploaded = st.file_uploader("Upload audio (wav, mp3, m4a)", type=["wav", "mp3", "m4a", "ogg"])
+    if uploaded is None:
+        st.markdown('<div class="ed-card">Upload a clip to see its emotion timeline.</div>', unsafe_allow_html=True)
+        return
+
+    classical = load_classical_model()
+    if classical is None:
+        st.info("Classical model unavailable - run classifier.py first.")
+        return
+
+    with st.spinner("Decoding and analyzing..."):
+        audio = load_audio_file(uploaded.getvalue())
+        points = analyze_timeline(audio, 16000, classical)
+
+    if not points:
+        st.warning("No non-silent windows found in this clip - nothing to analyze.")
+        return
+
+    time_label = "Elapsed time in conversation (s)" if is_interrogation else "Time (s)"
+    fig = go.Figure()
+    for emotion in sorted({p.emotion for p in points}):
+        subset = [p for p in points if p.emotion == emotion]
+        fig.add_trace(go.Scatter(
+            x=[p.start for p in subset], y=[p.confidence for p in subset],
+            mode="markers", name=emotion, marker=dict(size=10, color=EMOTION_COLORS.get(emotion, "#999")),
+        ))
+    fig.add_trace(go.Scatter(
+        x=[p.start for p in points], y=[p.confidence for p in points],
+        mode="lines", line=dict(color="#555", width=1), showlegend=False, hoverinfo="skip",
+    ))
+    fig.update_layout(
+        template="plotly_dark", paper_bgcolor="#13213d", plot_bgcolor="#13213d", height=420,
+        xaxis_title=time_label, yaxis_title="Confidence", yaxis_range=[0, 1],
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    dominant = pd.Series([p.emotion for p in points]).value_counts()
+    st.markdown(
+        f'<p style="color:#8b949e;">Dominant emotion across the clip: '
+        f'<b style="color:#43b047;">{dominant.index[0]}</b> '
+        f"({dominant.iloc[0]}/{len(points)} windows). "
+        f"Analyzed in {len(points)} overlapping 3-second windows.</p>",
         unsafe_allow_html=True,
     )
 
@@ -307,13 +393,15 @@ def model_comparison_tab():
 def main():
     st.markdown(STYLE, unsafe_allow_html=True)
     st.title("EmotionDetect")
-    st.caption("Speech emotion recognition, compared across three different approaches.")
-    tab0, tab1, tab2 = st.tabs(["Home", "Live Analysis", "Model Comparison"])
+    st.caption("An emotion timeline for speech, film, and music - not just a single-clip label.")
+    tab0, tab1, tab2, tab3 = st.tabs(["Home", "Timeline", "Live Analysis", "Model Comparison"])
     with tab0:
         home_tab()
     with tab1:
-        live_analysis_tab()
+        timeline_tab()
     with tab2:
+        live_analysis_tab()
+    with tab3:
         model_comparison_tab()
 
 
