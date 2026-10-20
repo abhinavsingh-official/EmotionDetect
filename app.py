@@ -161,13 +161,20 @@ def home_tab():
 
 
 def _bar_chart(title: str, probs: dict[str, float]):
+    top_label = max(probs, key=probs.get)
+    st.markdown(
+        f'<p style="margin-bottom:0.3rem;">{title}: '
+        f'<span style="color:#43b047; font-weight:700;">{top_label}</span> '
+        f'<span style="color:#8b949e;">({probs[top_label]:.0%})</span></p>',
+        unsafe_allow_html=True,
+    )
     labels = list(probs.keys())
     values = list(probs.values())
     fig = go.Figure(go.Bar(x=labels, y=values, marker_color="#43b047"))
     fig.update_layout(
-        title=title, yaxis_range=[0, 1], template="plotly_dark",
-        paper_bgcolor="#13213d", plot_bgcolor="#13213d", height=320,
-        margin=dict(l=20, r=20, t=40, b=20),
+        yaxis_range=[0, 1], template="plotly_dark",
+        paper_bgcolor="#13213d", plot_bgcolor="#13213d", height=280,
+        margin=dict(l=20, r=20, t=20, b=20),
     )
     st.plotly_chart(fig, use_container_width=True)
 
